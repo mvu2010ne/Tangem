@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Hiệu ứng rơi mượt</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+    }
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+    #controls {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+    }
+    button {
+      padding: 8px 12px;
+      margin-right: 10px;
+      background: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+<div id="controls">
+  <button onclick="changeMusic('nhac1.mp3')">Nhạc 1</button>
+  <button onclick="changeMusic('nhac2.mp3')">Nhạc 2</button>
+  <button onclick="changeMusic('nhac3.mp3')">Nhạc 3</button>
+</div>
+
+<audio id="audio" autoplay loop>
+  <source src="nhac1.mp3" type="audio/mp3">
+</audio>
+
+<canvas id="canvas"></canvas>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+
+  const colors = ['#ff69b4', '#00ffff', '#ffff00', '#00ff00', '#ff00ff', '#ffffff'];
+  let colorIndex = 0;
+  let items = [];
+
+  function random(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  function createItem() {
+    const type = Math.floor(Math.random() * 2); // Chỉ còn 2 loại: chữ và tim (loại ảnh bỏ đi nếu không cần)
+    return {
+      x: random(0, canvas.width),
+      y: random(-50, -10),
+      speed: random(0.8, 1.8),
+      size: random(6, 20), // Cỡ chữ nhỏ và to lẫn lộn
+      type: type,
+      text: type === 0 ? "❤" : ["Anh Yêu Em", "Baby Cua Anh", "Em Là Mèo"][Math.floor(Math.random() * 3)],
+      color: colors[colorIndex]
+    };
+  }
+
+  function drawItem(item) {
+    ctx.font = `${item.size}px Arial`;
+    ctx.fillStyle = item.color;
+    ctx.textAlign = 'center';
+    ctx.shadowColor = item.color;
+    ctx.shadowBlur = 8;
+    ctx.fillText(item.text, item.x, item.y);
+    ctx.shadowBlur = 0;
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    items.forEach(item => {
+      item.y += item.speed;
+      drawItem(item);
+    });
+    items = items.filter(item => item.y < canvas.height + 10);
+    requestAnimationFrame(animate);
+  }
+
+  // Ít chữ hơn mỗi lần (2 item), nhanh hơn 1 chút cho cảm giác đều
+  setInterval(() => {
+    for (let i = 0; i < 0.5; i++) items.push(createItem());
+  }, 200);
+
+  setInterval(() => {
+    colorIndex = (colorIndex + 1) % colors.length;
+  }, 3000);
+
+  animate();
+
+  function changeMusic(file) {
+    const audio = document.getElementById('audio');
+    audio.src = file;
+    audio.play();
+  }
+
+  window.addEventListener('resize', () => {
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+  });
+</script>
+</body>
+</html>
